@@ -14,7 +14,8 @@ const ProductCard: React.FC<{
   cart: CartItem[];
   dispatch: any;
   navigation: any;
-}> = ({ item, cart, dispatch, navigation }) => {
+  style?: object;
+}> = ({ item, cart, dispatch, navigation, style }) => {
   const cartItem = cart.find((i) => i.id === item.productId);
   const quantity = cartItem ? cartItem.quantity : 0;
   const animValue = useRef(new Animated.Value(0)).current;
@@ -54,7 +55,7 @@ const ProductCard: React.FC<{
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       <TouchableOpacity
         onPress={() =>
           navigation.navigate("ProductDetail", { productId: item.productId })
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 3,
     position: "relative",
-    width: "47%",
+    width: "48%",
   },
   image: { width: "100%", height: 150, borderRadius: 8, marginBottom: 5 },
   title: { fontSize: 16, fontWeight: "600" },

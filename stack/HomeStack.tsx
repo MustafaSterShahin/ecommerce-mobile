@@ -17,9 +17,10 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export default function HomeStack() {
   return (
     <Stack.Navigator
-      screenOptions={{
+      screenOptions={{ 
         headerTitleAlign: "center",
         headerTintColor: "#ff6600",
+        
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} />

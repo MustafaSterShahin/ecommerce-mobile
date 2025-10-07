@@ -71,7 +71,6 @@ const ProductsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <AppHeader onSearch={handleSearch} />
       <FlatList
         data={filteredProducts}
         keyExtractor={(item) => item.productId.toString()}

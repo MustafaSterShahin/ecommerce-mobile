@@ -17,7 +17,13 @@ const CartScreen: React.FC = () => {
 
   const handleQuantityChange = (itemId: number, delta: number) => {
     const item = state.items.find(i => i.id === itemId);
-    if (item) {
+    if (!item) return;
+
+    const newQuantity = item.quantity + delta;
+
+    if (newQuantity <= 0) {
+      dispatch({ type: "REMOVE_ITEM", payload: itemId });
+    } else {
       dispatch({ type: "ADD_ITEM", payload: { ...item, quantity: delta } });
     }
   };
@@ -42,8 +48,9 @@ const CartScreen: React.FC = () => {
                 />
                 <View style={styles.itemInfo}>
                   <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.price}>{item.price} ₺</Text>
-                    <View style={styles.qtyContainer}>
+                  {/* Ürünün toplam fiyatı */}
+                  <Text style={styles.price}>{item.price * item.quantity} ₺</Text>
+                  <View style={styles.qtyContainer}>
                     <TouchableOpacity onPress={() => handleQuantityChange(item.id, -1)}>
                       <Ionicons name="remove-circle-outline" size={28} color="#ff6600" />
                     </TouchableOpacity>
@@ -88,12 +95,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 2,
   },
-  image: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 15,
-  },
+  image: { width: 80, height: 80, borderRadius: 8, marginRight: 15 },
   itemInfo: { flex: 1 },
   name: { fontSize: 16, fontWeight: "600", marginBottom: 5 },
   price: { fontSize: 15, color: "green", fontWeight: "bold", marginBottom: 8 },

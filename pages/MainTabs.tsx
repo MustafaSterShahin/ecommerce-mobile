@@ -5,6 +5,7 @@ import { View, Text } from "react-native";
 import HomeStack from "../stack/HomeStack";
 import CartStack from "../stack/CartStack";
 import AccountStack from "../stack/AccountStack";
+import SearchStack from "../stack/SearchStack";
 import { useCart } from "../context/CartContext";
 
 const Tab = createBottomTabNavigator();
@@ -21,6 +22,7 @@ export default function MainTabs() {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
 
           if (route.name === "Home") iconName = "home";
+          else if (route.name === "Search") iconName = "search";
           else if (route.name === "Cart") iconName = "cart";
           else if (route.name === "Account") iconName = "person";
 
@@ -29,28 +31,35 @@ export default function MainTabs() {
               <View>
                 <Ionicons name={iconName} size={size} color={color} />
                 {cartCount > 0 && (
-                <View
-                  style={{
-                    position: "absolute",
-                    right: -6,
-                    top: -3,
-                    backgroundColor: "red",
-                    borderRadius: 10,
-                    paddingHorizontal: 5,
-                    paddingVertical: 1,
-                    minWidth: 18,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text style={{ color: "white", fontSize: 12, fontWeight: "bold" }}>
-                    {cartCount}
-                  </Text>
-                </View>
-              )}
+                  <View
+                    style={{
+                      position: "absolute",
+                      right: -6,
+                      top: -3,
+                      backgroundColor: "red",
+                      borderRadius: 10,
+                      paddingHorizontal: 5,
+                      paddingVertical: 1,
+                      minWidth: 18,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 12,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {cartCount}
+                    </Text>
+                  </View>
+                )}
               </View>
             );
           }
+
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: "#ff6600",
@@ -58,6 +67,7 @@ export default function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeStack} />
+      <Tab.Screen name="Search" component={SearchStack} />
       <Tab.Screen name="Cart" component={CartStack} />
       <Tab.Screen name="Account" component={AccountStack} />
     </Tab.Navigator>
