@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  FlatList,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
+import { View, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import axios from "axios";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList, Product } from "../Types";
-import AppHeader from "../components/AppHeader";
 import { useCart } from "../context/CartContext";
-import ProductCard from "../components/ProductCard"; // ProductCard import edildi
+import ProductCard from "../components/ProductCard";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Products">;
 
@@ -39,13 +33,6 @@ const ProductsScreen: React.FC<Props> = ({ route, navigation }) => {
       .catch((err) => console.error("Error fetching products:", err))
       .finally(() => setLoading(false));
   }, [categoryId]);
-
-  const handleSearch = (text: string) => {
-    const filtered = products.filter((p) =>
-      p.productName.toLowerCase().includes(text.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  };
 
   const formatImageUrl = (url: string) =>
     url.startsWith("http")

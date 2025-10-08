@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, TextInput, Button, Text, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../Types";
@@ -13,18 +13,29 @@ const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [role, setRole] = useState("User"); // Default role
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
+    if (!username || !email || !password) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
     setLoading(true);
     try {
-      await axios.post(API_URL, { username, password });
-      setError("");
-      navigation.navigate("Login");
+      const res = await axios.post(API_URL, { username, email, password, role });
+      if (res.status === 201 || res.status === 200) {
+        Alert.alert("Success", "Registered successfully!", [
+          { text: "OK", onPress: () => navigation.replace("Login") }
+        ]);
+      } else {
+        Alert.alert("Error", "Register failed. Try again.");
+      }
     } catch (err: any) {
-      setError("Register failed. Try again.");
+      Alert.alert("Error", err.response?.data?.message || "Register failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -33,11 +44,11 @@ const RegisterScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📝 Register</Text>
-      <TextInput placeholder="Username" value={username} onChangeText={setUsername} style={styles.input} />
+      <TextInput placeholder="Username" value={username} onChangeText={setUsername} style={styles.input} autoCapitalize="none" />
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" autoCapitalize="none" />
       <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
       {loading ? <ActivityIndicator size="large" color="#ff6600" /> : <Button title="Register" onPress={handleRegister} />}
-      <Button title="Back to Login" onPress={() => navigation.navigate("Login")} />
+      <Button title="Back to Login" onPress={() => navigation.replace("Login")} />
     </View>
   );
 };
@@ -46,7 +57,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20 },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
   input: { borderWidth: 1, borderColor: "#ccc", padding: 10, marginBottom: 10, borderRadius: 6 },
-  error: { color: "red", marginBottom: 10 },
 });
 
 export default RegisterScreen;

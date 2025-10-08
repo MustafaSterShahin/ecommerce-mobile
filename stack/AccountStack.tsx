@@ -1,12 +1,13 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AccountScreen from "../pages/AccountScreen";
+import { RootStackParamList } from "../Types";
 
 export type AccountStackParamList = {
   Account: undefined;
 };
 
-const Stack = createNativeStackNavigator<AccountStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AccountStack() {
   return (
@@ -16,7 +17,11 @@ export default function AccountStack() {
         headerTintColor: "#ff6600",
       }}
     >
-      <Stack.Screen name="Account" component={AccountScreen} />
+      <Stack.Screen
+        name="Account"
+        component={AccountScreen}
+        options={{ title: "My Account" }}
+      />
     </Stack.Navigator>
   );
 }

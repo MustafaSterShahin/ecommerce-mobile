@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Animated,
 } from "react-native";
 import { Product, CartItem } from "../Types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../context/AuthContext";
 
 const ProductCard: React.FC<{
   item: Product;
@@ -16,6 +18,7 @@ const ProductCard: React.FC<{
   navigation: any;
   style?: object;
 }> = ({ item, cart, dispatch, navigation, style }) => {
+  const { token } = useAuth();
   const cartItem = cart.find((i) => i.id === item.productId);
   const quantity = cartItem ? cartItem.quantity : 0;
   const animValue = useRef(new Animated.Value(0)).current;
@@ -28,30 +31,45 @@ const ProductCard: React.FC<{
     }).start();
   }, [quantity]);
 
+  const saveCart = async (newCart: CartItem[]) => {
+    if (!token) return;
+    await AsyncStorage.setItem(`cart_${token}`, JSON.stringify(newCart));
+  };
+
   const addToCart = () => {
+    let newCart: CartItem[];
     if (cartItem) {
       dispatch({ type: "ADD_ITEM", payload: { ...cartItem, quantity: 1 } });
+      newCart = cart.map((i) =>
+        i.id === cartItem.id ? { ...i, quantity: i.quantity + 1 } : i
+      );
     } else {
-      dispatch({
-        type: "ADD_ITEM",
-        payload: {
-          id: item.productId,
-          name: item.productName,
-          price: item.unitPrice,
-          quantity: 1,
-          imageUrl: item.imageUrl,
-        },
-      });
+      const newItem = {
+        id: item.productId,
+        name: item.productName,
+        price: item.unitPrice,
+        quantity: 1,
+        imageUrl: item.imageUrl,
+      };
+      dispatch({ type: "ADD_ITEM", payload: newItem });
+      newCart = [...cart, newItem];
     }
+    saveCart(newCart);
   };
 
   const removeFromCart = () => {
     if (!cartItem) return;
+    let newCart: CartItem[];
     if (cartItem.quantity === 1) {
       dispatch({ type: "REMOVE_ITEM", payload: cartItem.id });
+      newCart = cart.filter((i) => i.id !== cartItem.id);
     } else {
       dispatch({ type: "ADD_ITEM", payload: { ...cartItem, quantity: -1 } });
+      newCart = cart.map((i) =>
+        i.id === cartItem.id ? { ...i, quantity: i.quantity - 1 } : i
+      );
     }
+    saveCart(newCart);
   };
 
   return (
@@ -65,12 +83,10 @@ const ProductCard: React.FC<{
         <Text style={styles.title}>{item.productName}</Text>
         <Text style={styles.price}>{item.unitPrice} ₺</Text>
       </TouchableOpacity>
-
       <View style={styles.cartWrapper}>
         <TouchableOpacity style={styles.addButton} onPress={addToCart}>
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
-
         {quantity > 0 && (
           <Animated.View
             style={[
@@ -91,10 +107,7 @@ const ProductCard: React.FC<{
             <View style={styles.quantityBackground}>
               <Text style={styles.quantity}>{quantity}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={removeFromCart}
-            >
+            <TouchableOpacity style={styles.controlButton} onPress={removeFromCart}>
               <Text style={styles.controlText}>-</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -105,61 +118,17 @@ const ProductCard: React.FC<{
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    margin: 5,
-    padding: 10,
-    elevation: 3,
-    position: "relative",
-    width: "48%",
-  },
+  card: { backgroundColor: "#fff", borderRadius: 8, margin: 5, padding: 10, elevation: 3, position: "relative", width: "48%" },
   image: { width: "100%", height: 150, borderRadius: 8, marginBottom: 5 },
   title: { fontSize: 16, fontWeight: "600" },
   price: { fontSize: 16, fontWeight: "bold", color: "green", marginTop: 2 },
-  cartWrapper: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    alignItems: "center",
-  },
-  addButton: {
-    backgroundColor: "#ff6600",
-    borderRadius: 16,
-    width: 32,
-    height: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2,
-  },
-  addButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 20,
-    textAlign: "center",
-  },
-  quantityContainer: {
-    marginTop: 5,
-    alignItems: "center",
-  },
-  quantityBackground: {
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    minWidth: 24,
-    alignItems: "center",
-  },
+  cartWrapper: { position: "absolute", top: 10, right: 10, alignItems: "center" },
+  addButton: { backgroundColor: "#ff6600", borderRadius: 16, width: 32, height: 32, justifyContent: "center", alignItems: "center", zIndex: 2 },
+  addButtonText: { color: "#fff", fontWeight: "bold", fontSize: 20, textAlign: "center" },
+  quantityContainer: { marginTop: 5, alignItems: "center" },
+  quantityBackground: { backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 12, paddingHorizontal: 6, paddingVertical: 2, minWidth: 24, alignItems: "center" },
   quantity: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  controlButton: {
-    backgroundColor: "#ff6600",
-    borderRadius: 16,
-    width: 32,
-    height: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 5,
-  },
+  controlButton: { backgroundColor: "#ff6600", borderRadius: 16, width: 32, height: 32, justifyContent: "center", alignItems: "center", marginTop: 5 },
   controlText: { color: "#fff", fontWeight: "bold", fontSize: 20 },
 });
 

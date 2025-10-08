@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
-import { CartState, CartAction } from "../Types";
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from "react";
+import { CartState, CartAction, CartItem } from "../Types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext, useAuth } from "./AuthContext";
 
 const CartContext = createContext<{
   state: CartState;
@@ -33,6 +35,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       };
     case "CLEAR_CART":
       return { items: [] };
+    case "SET_CART":
+      return { items: action.payload };
     default:
       return state;
   }
@@ -40,6 +44,26 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const loadCart = async () => {
+      if (!token) return;
+      const storedCart = await AsyncStorage.getItem(`cart_${token}`);
+      if (storedCart) {
+        dispatch({ type: "SET_CART", payload: JSON.parse(storedCart) });
+      }
+    };
+    loadCart();
+  }, [token]);
+
+  useEffect(() => {
+    const saveCart = async () => {
+      if (!token) return;
+      await AsyncStorage.setItem(`cart_${token}`, JSON.stringify(state.items));
+    };
+    saveCart();
+  }, [state.items, token]);
 
   return (
     <CartContext.Provider value={{ state, dispatch }}>
